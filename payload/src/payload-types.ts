@@ -155,6 +155,7 @@ export interface User {
 export interface Media {
   id: number;
   alt: string;
+  _key?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -195,10 +196,11 @@ export interface Product {
   pictures: (number | Media)[];
   colors?:
     | {
+        colorName: string;
         /**
          * Choose a color for a variation of this product
          */
-        color?: string | null;
+        color: string;
         id?: string | null;
       }[]
     | null;
@@ -302,6 +304,7 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  _key?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -337,6 +340,7 @@ export interface ProductsSelect<T extends boolean = true> {
   colors?:
     | T
     | {
+        colorName?: T;
         color?: T;
         id?: T;
       };

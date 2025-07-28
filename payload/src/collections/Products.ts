@@ -33,9 +33,15 @@ export const Products: CollectionConfig = {
       name: "colors",
       type: "array",
       fields: [
+        {
+          name: "colorName",
+          type: "text",
+          required: true
+        },
         colorPickerField({
           name: 'color',
           label: 'Color',
+          required: true,
           admin: {
             position: 'sidebar',
             description: 'Choose a color for a variation of this product',

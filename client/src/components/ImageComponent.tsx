@@ -11,7 +11,6 @@ const ImageComponent = async ({
   className?: string; // Made optional
 }) => {
   const serverURL = getServerURL();
-
   // Handle cases where data is a number (ID) or string (URL)
   if (typeof data === "number") {
     const image = await fetchImageFromId(data);
@@ -30,6 +29,7 @@ const ImageComponent = async ({
 
   // Handle Media object case
   if (data?.url) {
+    console.log(data.url);
     return (
       <div className={className} style={{ position: "relative" }}>
         <Image

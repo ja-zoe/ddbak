@@ -83,5 +83,5 @@ export async function fetchProductCategoryFromId(id: number) {
 }
 
 export async function fetchProductFromId(id: number) {
-  return await fetchFromServer<ProductCategory>("products", id);
+  return await fetchFromServer<Product>("products", id);
 }
