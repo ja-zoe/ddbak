@@ -50,6 +50,25 @@ export const Products: CollectionConfig = {
       ]
     },
     {
+      name: "otherProductVariants",
+      type: "array",
+      fields: [
+        {
+          name: "variantName",
+          type: "text",
+          required: true
+        },
+        {
+          name: "variantOptions",
+          type: "array",
+          required: true,
+          fields: [
+            { name: "option", type: "text", required: true },
+          ]
+        }
+      ]
+    },
+    {
       name: 'category',
       type: 'relationship',
       relationTo: 'product-categories',
@@ -59,5 +78,5 @@ export const Products: CollectionConfig = {
   ],
   admin: {
     useAsTitle: "name"
-  }
+  },
 }

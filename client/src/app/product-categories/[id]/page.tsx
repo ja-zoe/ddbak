@@ -3,7 +3,7 @@ import ImageComponent from "@/components/ImageComponent";
 import type { Product } from "@payload";
 
 const Page = async ({ params }: { params: { id: string } }) => {
-  const { id } = params;
+  const { id } = await params;
   const productCategory = await fetchProductCategoryFromId(parseInt(id));
 
   const docs = productCategory.relatedProducts?.docs;

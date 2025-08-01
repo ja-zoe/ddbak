@@ -71,6 +71,8 @@ export interface Config {
     media: Media;
     'product-categories': ProductCategory;
     products: Product;
+    'gallery-pictures': GalleryPicture;
+    orders: Order;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -85,6 +87,8 @@ export interface Config {
     media: MediaSelect<false> | MediaSelect<true>;
     'product-categories': ProductCategoriesSelect<false> | ProductCategoriesSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
+    'gallery-pictures': GalleryPicturesSelect<false> | GalleryPicturesSelect<true>;
+    orders: OrdersSelect<false> | OrdersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -204,7 +208,70 @@ export interface Product {
         id?: string | null;
       }[]
     | null;
+  otherProductVariants?:
+    | {
+        variantName: string;
+        variantOptions: {
+          option: string;
+          id?: string | null;
+        }[];
+        id?: string | null;
+      }[]
+    | null;
   category: (number | ProductCategory)[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "gallery-pictures".
+ */
+export interface GalleryPicture {
+  id: number;
+  pictures: (number | Media)[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders".
+ */
+export interface Order {
+  id: number;
+  customerEmail: string;
+  shippingAddress: {
+    line1: string;
+    line2?: string | null;
+    city: string;
+    state?: string | null;
+    postal_code: string;
+    country: string;
+  };
+  items: {
+    product: number | Product;
+    selectedColor?: {
+      name?: string | null;
+      hex?: string | null;
+    };
+    /**
+     * Key-value pairs of variant options (e.g. Size: M)
+     */
+    selectedVariants?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+    quantity: number;
+    unitPrice: number;
+    id?: string | null;
+  }[];
+  status: 'unfulfilled' | 'processing' | 'shipped' | 'cancelled';
+  stripeSessionId: string;
+  totalAmount: number;
   updatedAt: string;
   createdAt: string;
 }
@@ -230,6 +297,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'products';
         value: number | Product;
+      } | null)
+    | ({
+        relationTo: 'gallery-pictures';
+        value: number | GalleryPicture;
+      } | null)
+    | ({
+        relationTo: 'orders';
+        value: number | Order;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -344,7 +419,65 @@ export interface ProductsSelect<T extends boolean = true> {
         color?: T;
         id?: T;
       };
+  otherProductVariants?:
+    | T
+    | {
+        variantName?: T;
+        variantOptions?:
+          | T
+          | {
+              option?: T;
+              id?: T;
+            };
+        id?: T;
+      };
   category?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "gallery-pictures_select".
+ */
+export interface GalleryPicturesSelect<T extends boolean = true> {
+  pictures?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders_select".
+ */
+export interface OrdersSelect<T extends boolean = true> {
+  customerEmail?: T;
+  shippingAddress?:
+    | T
+    | {
+        line1?: T;
+        line2?: T;
+        city?: T;
+        state?: T;
+        postal_code?: T;
+        country?: T;
+      };
+  items?:
+    | T
+    | {
+        product?: T;
+        selectedColor?:
+          | T
+          | {
+              name?: T;
+              hex?: T;
+            };
+        selectedVariants?: T;
+        quantity?: T;
+        unitPrice?: T;
+        id?: T;
+      };
+  status?: T;
+  stripeSessionId?: T;
+  totalAmount?: T;
   updatedAt?: T;
   createdAt?: T;
 }

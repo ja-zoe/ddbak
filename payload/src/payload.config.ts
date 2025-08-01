@@ -11,8 +11,12 @@ import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { ProductCategories } from './collections/ProductCategories'
 import { Products } from './collections/Products'
+import Orders from './collections/Orders'
 
 import { uploadthingStorage } from '@payloadcms/storage-uploadthing'
+
+import { GalleryPictures } from './collections/GalleryPictures'
+
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -22,9 +26,9 @@ export default buildConfig({
     user: Users.slug,
     importMap: {
       baseDir: path.resolve(dirname),
-    },
+    }
   },
-  collections: [Users, Media, ProductCategories, Products],
+  collections: [Users, Media, ProductCategories, Products, GalleryPictures, Orders],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
@@ -41,7 +45,9 @@ export default buildConfig({
     uploadthingStorage({
       enabled: true,
       collections: {
-        media: true,
+        media: {
+          disableLocalStorage: true
+        },
       },
       options: {
         token: process.env.UPLOADTHING_TOKEN || '',
