@@ -65,7 +65,10 @@ const ImageComponent = ({ data, className }: Props) => {
   }
 
   return (
-    <div className={className} style={{ position: "relative" }}>
+    <div
+      className={className}
+      style={!className?.includes("absolute") ? { position: "relative" } : {}}
+    >
       <Image
         src={`https://utfs.io/f/${resolvedImage._key || resolvedImage.url}`}
         alt={resolvedImage.alt || "Uploaded image"}

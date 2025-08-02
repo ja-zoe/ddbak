@@ -1,3 +1,4 @@
+"use client";
 const Gallery = () => {
   return <div id="gallery">Gallery</div>;
 };

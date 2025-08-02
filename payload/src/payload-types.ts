@@ -179,6 +179,7 @@ export interface Media {
 export interface ProductCategory {
   id: number;
   name: string;
+  description: string;
   relatedProducts?: {
     docs?: (number | Product)[];
     hasNextPage?: boolean;
@@ -398,6 +399,7 @@ export interface MediaSelect<T extends boolean = true> {
  */
 export interface ProductCategoriesSelect<T extends boolean = true> {
   name?: T;
+  description?: T;
   relatedProducts?: T;
   picture?: T;
   updatedAt?: T;

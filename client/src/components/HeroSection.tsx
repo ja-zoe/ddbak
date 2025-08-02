@@ -1,3 +1,4 @@
+"use Client";
 import Image from "next/image";
 
 const HeroSection = () => {
@@ -15,13 +16,13 @@ const HeroSection = () => {
       </div>
       <div className="flex gap-2 text-white justify-center">
         <a
-          className="px-2 py-1 bg-gold rounded-sm cursor-pointer"
+          className="px-2 py-1 border border-gold text-gold cursor-pointer"
           href="#gallery"
         >
           Gallery
         </a>
         <a
-          className="px-2 py-1 bg-gold rounded-sm cursor-pointer"
+          className="px-2 py-1 bg-gold cursor-pointer"
           href="#product-categories"
         >
           Browse Offerings

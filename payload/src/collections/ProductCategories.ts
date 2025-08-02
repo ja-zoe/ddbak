@@ -9,6 +9,11 @@ export const ProductCategories: CollectionConfig = {
       required: true,
     },
     {
+      name: 'description',
+      type: 'text',
+      required: true
+    },
+    {
       name: 'relatedProducts',
       type: 'join',
       collection: 'products',
