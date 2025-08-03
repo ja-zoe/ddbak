@@ -2,7 +2,7 @@
 
 import { stripe } from "./stripe";
 import { fetchProductFromId } from "./requests";
-import type { CartItem } from "./cart";
+import { CartItem } from "@/contexts/CartProvider";
 
 export async function createCheckoutSession(cart: CartItem[]) {
   const products = await Promise.all(

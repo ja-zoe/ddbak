@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { AuroraBackground } from "@/components/ui/aurora-background";
 import ImageComponent from "@/components/ImageComponent";
 import ProductImagesCarousel from "@/components/ProductImagesCarousel";
@@ -8,17 +9,20 @@ import ProductForm from "@/components/ProductForm";
 import type { Product } from "@payload";
 import { fetchProductFromId } from "@/lib/requests";
 
-export default function Page({ params }: { params: { id: string } }) {
+export default function Page() {
+  const params = useParams();
   const [product, setProduct] = useState<Product | null>(null);
 
   useEffect(() => {
+    if (!params?.id) return;
+
     async function loadData() {
-      const fetched = await fetchProductFromId(parseInt(params.id));
+      const fetched = await fetchProductFromId(parseInt(params.id as string));
       setProduct(fetched);
     }
 
     loadData();
-  }, [params.id]);
+  }, [params?.id]);
 
   if (!product) return <p>Loading...</p>;
 
@@ -32,7 +36,7 @@ export default function Page({ params }: { params: { id: string } }) {
 
   return (
     <AuroraBackground className="bg-black/10 py-12">
-      <div className=" absolute w-full h-full md:flex justify-center items-center gap-2">
+      <div className="absolute w-full h-full md:flex justify-center items-center gap-2">
         <ProductImagesCarousel images={imageElements} />
         <div className="p-3 space-y-2">
           <div>

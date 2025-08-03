@@ -10,23 +10,14 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { getCart, setQuantity, removeFromCart } from "../../lib/cart";
 import { fetchProductFromId } from "@/lib/requests";
 import type { Product } from "@payload";
 import ImageComponent from "@/components/ImageComponent";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { createCheckoutSession } from "@/lib/checkout";
 import { AuroraBackground } from "@/components/ui/aurora-background";
-
-type RawCartItem = {
-  productId: string;
-  quantity: number;
-  color?: {
-    name: string;
-    hex: string;
-  };
-  otherVariants?: Record<string, string>;
-};
+import { useCart } from "@/contexts/CartProvider";
+import type { CartItem } from "@/contexts/CartProvider";
 
 type MergedCartItem = {
   product: Product;
@@ -39,48 +30,71 @@ type MergedCartItem = {
 };
 
 const Page = () => {
-  const [cartItems, setCartItems] = useState<MergedCartItem[]>([]);
+  const cart = useCart();
+  const [mergedItems, setMergedItems] = useState<MergedCartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreatingCheckout, setIsCreatingCheckout] = useState(false);
 
   useEffect(() => {
-    const fetchCart = async () => {
-      const rawCart: RawCartItem[] = getCart();
-      const itemsWithProducts: MergedCartItem[] = await Promise.all(
-        rawCart.map(async (item) => {
-          const product = await fetchProductFromId(parseInt(item.productId));
-          return {
-            product,
-            quantity: item.quantity,
-            color: item.color,
-            otherVariants: item.otherVariants,
-          };
-        })
-      );
-      setCartItems(itemsWithProducts);
-      setLoading(false);
-    };
+    async function mergeCartItems() {
+      try {
+        const { items } = cart;
+        const merged = await Promise.all(
+          items.map(async (item) => {
+            const product = await fetchProductFromId(item.id);
+            return {
+              product,
+              quantity: item.quantity,
+              color: item.color,
+              otherVariants: item.otherVariants,
+            };
+          })
+        );
+        setMergedItems(merged);
+      } catch (error) {
+        console.error("Failed to merge cart items:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-    fetchCart();
-  }, []);
+    mergeCartItems();
+  }, [cart]);
 
-  const handleQuantityChange = (productId: string, newQty: number) => {
-    setQuantity(productId, newQty);
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.product.id.toString() === productId
-          ? { ...item, quantity: newQty }
-          : item
-      )
+  const handleQuantityChange = (item: CartItem, newQuantity: number) => {
+    cart.updateQuantity(item, newQuantity);
+  };
+
+  const handleRemove = (item: CartItem) => {
+    cart.removeItem(item);
+  };
+
+  const getCartSubTotal = () => {
+    return mergedItems.reduce(
+      (sum, item) => sum + (item.product.price || 0) * item.quantity,
+      0
     );
   };
 
-  const handleRemove = (productId: string) => {
-    removeFromCart(productId);
-    setCartItems((prev) =>
-      prev.filter((item) => item.product.id.toString() !== productId)
-    );
-  };
+  async function handleCheckoutSubmit() {
+    setIsCreatingCheckout(true);
+    try {
+      // Create mutable copy for checkout
+      const checkoutItems = [...cart.items];
+      const checkoutSession = await createCheckoutSession(checkoutItems);
+
+      if (checkoutSession.url) {
+        window.location.href = checkoutSession.url;
+      } else {
+        alert("Something went wrong");
+      }
+    } catch (error) {
+      console.error("Checkout failed:", error);
+      alert("Failed to initiate checkout");
+    } finally {
+      setIsCreatingCheckout(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -90,40 +104,19 @@ const Page = () => {
     );
   }
 
-  if (cartItems.length === 0) {
+  if (cart.items.length === 0) {
     return (
-      <div className="h-screen flex justify-center items-center">
-        <p>No items in shopping cart</p>
-      </div>
+      <AuroraBackground>
+        <div className="relative h-screen flex justify-center items-center">
+          <p>No items in shopping cart</p>
+        </div>
+      </AuroraBackground>
     );
   }
 
-  function getCartSubTotal() {
-    return cartItems
-      .map((item) => item.product.price * item.quantity)
-      .reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-  }
-
-  async function handleCheckoutSubmit() {
-    setIsCreatingCheckout(true);
-    try {
-      const checkoutSession = await createCheckoutSession(getCart());
-      if (checkoutSession.url) {
-        window.location.href = checkoutSession.url;
-      } else {
-        alert("Something went wrong");
-      }
-    } catch (error) {
-      console.error(error);
-      alert("Something went wrong");
-    }
-
-    setIsCreatingCheckout(false);
-  }
-
   return (
-    <AuroraBackground className="bg-black/10 py-12">
-      <div className="space-y-4 p-4">
+    <AuroraBackground className="bg-black/10 py-12 h-max">
+      <div className="space-y-4 pt-20 relative min-h-screen">
         <div className="flex flex-col items-center">
           <p className="text-2xl font-semibold mb-2">Shopping Cart</p>
           <Breadcrumb>
@@ -142,20 +135,24 @@ const Page = () => {
         </div>
         <div className="md:flex md:flex-row md:justify-center md:gap-2">
           <div>
-            {cartItems.map((item, idx) => {
-              console.log(item);
+            {mergedItems.map((item, idx) => {
+              const cartItem: CartItem = {
+                id: item.product.id,
+                quantity: item.quantity,
+                color: item.color,
+                otherVariants: item.otherVariants,
+              };
+
               return (
                 <div
-                  key={`${item.product.name}-${idx}`}
-                  className="flex gap-4 border-b py-4 "
+                  key={`${item.product.id}-${idx}`}
+                  className="flex gap-4 border-b py-4"
                 >
-                  {/* Image */}
                   <ImageComponent
                     data={item.product.pictures?.[0]}
                     className="w-28 h-28 rounded-sm overflow-hidden"
                   />
                   <div className="flex grow justify-between">
-                    {/* Product Info */}
                     <div className="space-y-2">
                       <div>
                         <p className="text-lg font-medium">
@@ -184,7 +181,6 @@ const Page = () => {
                           ))}
                       </div>
                     </div>
-                    {/* Quantity Controls & Remove */}
                     <div className="flex flex-col justify-between items-end">
                       <p className="text-lg">${item.product.price}</p>
                       <div className="space-y-2">
@@ -192,7 +188,7 @@ const Page = () => {
                           <button
                             onClick={() =>
                               handleQuantityChange(
-                                item.product.id.toString(),
+                                cartItem,
                                 Math.max(1, item.quantity - 1)
                               )
                             }
@@ -203,10 +199,7 @@ const Page = () => {
                           <span>{item.quantity}</span>
                           <button
                             onClick={() =>
-                              handleQuantityChange(
-                                item.product.id.toString(),
-                                item.quantity + 1
-                              )
+                              handleQuantityChange(cartItem, item.quantity + 1)
                             }
                             className="p-1 border rounded"
                           >
@@ -214,9 +207,7 @@ const Page = () => {
                           </button>
                         </div>
                         <button
-                          onClick={() =>
-                            handleRemove(item.product.id.toString())
-                          }
+                          onClick={() => handleRemove(cartItem)}
                           className="text-red-600 text-xs flex items-center gap-1"
                         >
                           <Trash2 size={14} />
@@ -234,7 +225,7 @@ const Page = () => {
             <div className="border-b">
               <div className="flex justify-between">
                 <p>Subtotal</p>
-                <p>${getCartSubTotal()}</p>
+                <p>${getCartSubTotal().toFixed(2)}</p>
               </div>
               <div className="flex justify-between">
                 <p>Shipping</p>
@@ -243,11 +234,11 @@ const Page = () => {
             </div>
             <div className="flex justify-between">
               <p>Total</p>
-              <p>USD ${getCartSubTotal()}</p>
+              <p>USD ${getCartSubTotal().toFixed(2)}</p>
             </div>
             <button
               className="px-2 h-8 rounded-sm w-full text-white bg-gold cursor-pointer flex items-center justify-center"
-              onClick={() => handleCheckoutSubmit()}
+              onClick={handleCheckoutSubmit}
               disabled={isCreatingCheckout}
             >
               {isCreatingCheckout ? <div className="loader" /> : "Checkout"}

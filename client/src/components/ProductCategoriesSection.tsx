@@ -28,13 +28,16 @@ const ProductCategoriesSection = () => {
   }, []);
 
   return (
-    <div className="flex px-4 justify-center gap-5" id="product-categories">
+    <div
+      className="flex px-4 justify-center gap-5 flex-wrap"
+      id="product-categories"
+    >
       {error ? (
         <p className="text-red-500">{error}</p>
       ) : productCategories ? (
         productCategories.map((val) => (
-          <a href={`/product-categories/${val.id}`}>
-            <div key={val.id} className="max-w-xs w-full group/card relative">
+          <a href={`/product-categories/${val.id}`} key={val.id}>
+            <div className="max-w-xs w-full group/card relative">
               <div
                 className={cn(
                   "relative cursor-pointer overflow-hidden h-96 shadow-xl mx-auto flex flex-col justify-end p-4"

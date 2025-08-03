@@ -6,8 +6,8 @@ import { AuroraBackground } from "@/components/ui/aurora-background";
 
 export default function Home() {
   return (
-    <AuroraBackground className="bg-black/10">
-      <div className="space-y-10">
+    <AuroraBackground className="bg-black/10 h-max">
+      <div className="space-y-10 relative pt-24 min-h-screen">
         <HeroSection />
         <ProductCategoriesSection />
         <Gallery />

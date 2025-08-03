@@ -19,9 +19,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { addToCart } from "@/lib/cart";
+import { useCart } from "@/contexts/CartProvider";
 
 const ProductForm = ({ product }: { product: Product }) => {
+  const cart = useCart();
   function buildSchema(product: Product) {
     const variantKeys =
       product.otherProductVariants?.map((v) => v.variantName) || [];
@@ -68,10 +69,10 @@ const ProductForm = ({ product }: { product: Product }) => {
       : undefined;
 
     const otherVariants = data.otherVariants;
+    console.log();
 
-    addToCart(product.id.toString(), 1, color, otherVariants);
+    cart.addItem({ id: product.id, color, otherVariants, quantity: 1 });
   };
-  console.log(product.colors);
   return (
     <Form {...form}>
       <form className="space-y-3" onSubmit={form.handleSubmit(onSubmit)}>

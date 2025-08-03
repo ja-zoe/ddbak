@@ -1,17 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import ImageComponent from "@/components/ImageComponent";
 import { AuroraBackground } from "@/components/ui/aurora-background";
 import type { Product } from "@payload";
 import { fetchProductCategoryFromId, fetchProductFromId } from "@/lib/requests";
 
-export default function Page({ params }: { params: { id: string } }) {
+export default function Page() {
+  const params = useParams();
   const [products, setProducts] = useState<Product[] | null>(null);
 
   useEffect(() => {
+    if (!params?.id) return;
+
     async function loadData() {
-      const category = await fetchProductCategoryFromId(parseInt(params.id));
+      const category = await fetchProductCategoryFromId(
+        parseInt(params.id as string)
+      );
       const docs = category.relatedProducts?.docs;
 
       if (!docs || docs.length === 0) {
@@ -30,7 +36,7 @@ export default function Page({ params }: { params: { id: string } }) {
     }
 
     loadData();
-  }, [params.id]);
+  }, [params?.id]);
 
   if (products === null) return <p>Loading...</p>;
   if (products.length === 0)
@@ -49,7 +55,7 @@ export default function Page({ params }: { params: { id: string } }) {
               <p className="text-gray-700">
                 {product.name.toLocaleUpperCase()}
               </p>
-              <p className="">${product.price}</p>
+              <p>${product.price}</p>
             </div>
           </a>
         ))}

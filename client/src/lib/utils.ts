@@ -20,3 +20,11 @@ export function getPayloadAPIKey(): string {
   }
   return apiKey;
 }
+
+export function getStripeKey(): string {
+  const apiKey = process.env.STRIPE_SECRET_KEY;
+  if (!apiKey || apiKey.length < 1) {
+    throw new Error("STRIPE_SECRET_KEY environment variable not set");
+  }
+  return apiKey;
+}

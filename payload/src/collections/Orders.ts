@@ -1,4 +1,5 @@
 import type { CollectionConfig } from "payload";
+import type { CollectionBeforeChangeHook } from 'payload'
 
 const Orders: CollectionConfig = {
   slug: "orders",

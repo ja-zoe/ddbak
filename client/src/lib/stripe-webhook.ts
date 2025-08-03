@@ -2,6 +2,8 @@
 
 import { stripe } from "./stripe";
 import type Stripe from "stripe";
+import { createOrder } from "./requests";
+import { reconcileOrders } from "./reconcile-orders";
 
 export async function PostWebhook(rawBody: Buffer, sig: string) {
   let event: Stripe.Event;
@@ -10,7 +12,7 @@ export async function PostWebhook(rawBody: Buffer, sig: string) {
     event = stripe.webhooks.constructEvent(
       rawBody,
       sig,
-      process.env.STRIPE_WEBHOOK_SECRET!
+      'whsec_f5f1c490fe360599ec65aef9d64836451e658b326db48334845de2dd320a63e9'
     );
   } catch (err: any) {
     console.error("Webhook signature verification failed:", err.message);
@@ -29,7 +31,7 @@ export async function PostWebhook(rawBody: Buffer, sig: string) {
       const metadata = product?.metadata || {};
 
       return {
-        product: metadata.productId || null, // This must match your Payload Product ID
+        product: parseInt(metadata.productId), // This must match your Payload Product ID
         selectedColor: metadata.color
           ? {
             name: metadata.colorName || metadata.color,
@@ -47,31 +49,32 @@ export async function PostWebhook(rawBody: Buffer, sig: string) {
       };
     });
 
+    const address = session.collected_information?.shipping_details?.address
     const orderData = {
       customerEmail: session.customer_details?.email ?? "",
-      shippingAddress: session.collected_information?.shipping_details || null,
+      shippingAddress: {
+        "line1": address?.line1,
+        "line2": address?.line2,
+        "city": address?.city,
+        "state": address?.state,
+        "postal_code": address?.postal_code,
+        "country": address?.country
+      },
       items,
       status: "unfulfilled",
       stripeSessionId: session.id,
       totalAmount: session.amount_total,
     };
 
-    const res = await fetch("http://localhost:3000/api/collections/orders", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.PAYLOAD_API_KEY}`,
-      },
-      body: JSON.stringify({ data: orderData }),
-    });
+    try {
+      reconcileOrders()
+      await createOrder(orderData)
 
-    if (!res.ok) {
-      const text = await res.text();
-      console.error("Payload API error:", text);
-      throw new Error(`Failed to create order in Payload: ${text}`);
+      return { success: true };
+    } catch (error) {
+      console.error("Payload API error:", error);
+      return { success: false }
     }
-
-    return { success: true };
   }
 
   return { success: false, reason: "Unhandled event type" };
