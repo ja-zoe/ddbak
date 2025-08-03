@@ -7,7 +7,7 @@ import { CartItem } from "@/contexts/CartProvider";
 export async function createCheckoutSession(cart: CartItem[]) {
   const products = await Promise.all(
     cart.map(async (item) => {
-      const product = await fetchProductFromId(parseInt(item.productId));
+      const product = await fetchProductFromId(item.id);
       return {
         product,
         quantity: item.quantity,

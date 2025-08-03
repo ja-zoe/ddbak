@@ -18,6 +18,7 @@ import { createCheckoutSession } from "@/lib/checkout";
 import { AuroraBackground } from "@/components/ui/aurora-background";
 import { useCart } from "@/contexts/CartProvider";
 import type { CartItem } from "@/contexts/CartProvider";
+import { useRouter } from "next/navigation";
 
 type MergedCartItem = {
   product: Product;
@@ -27,6 +28,7 @@ type MergedCartItem = {
     hex: string;
   };
   otherVariants?: Record<string, string>;
+  isRemoving?: boolean; // New flag for removal state
 };
 
 const Page = () => {
@@ -34,14 +36,44 @@ const Page = () => {
   const [mergedItems, setMergedItems] = useState<MergedCartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreatingCheckout, setIsCreatingCheckout] = useState(false);
+  const [productCache, setProductCache] = useState<Record<number, Product>>({});
+  const router = useRouter();
 
   useEffect(() => {
     async function mergeCartItems() {
       try {
         const { items } = cart;
-        const merged = await Promise.all(
-          items.map(async (item) => {
-            const product = await fetchProductFromId(item.id);
+
+        // Identify which products are not in cache
+        const itemsToFetch = items.filter((item) => !productCache[item.id]);
+
+        // Temporary cache copy to work with
+        let updatedCache = { ...productCache };
+
+        if (itemsToFetch.length > 0) {
+          const fetchedProducts = await Promise.all(
+            itemsToFetch.map((item) => fetchProductFromId(item.id))
+          );
+
+          fetchedProducts.forEach((product, index) => {
+            const id = itemsToFetch[index].id;
+            updatedCache[id] = product;
+          });
+
+          // Update the state cache with the new merged data
+          setProductCache(updatedCache);
+        }
+
+        // Always use the updatedCache for merging
+        const merged = items
+          .map((item) => {
+            const product = updatedCache[item.id];
+
+            if (!product) {
+              console.error(`Product not found for cart item ID: ${item.id}`);
+              return null;
+            }
+
             return {
               product,
               quantity: item.quantity,
@@ -49,7 +81,8 @@ const Page = () => {
               otherVariants: item.otherVariants,
             };
           })
-        );
+          .filter(Boolean) as MergedCartItem[]; // remove nulls safely
+
         setMergedItems(merged);
       } catch (error) {
         console.error("Failed to merge cart items:", error);
@@ -62,11 +95,69 @@ const Page = () => {
   }, [cart]);
 
   const handleQuantityChange = (item: CartItem, newQuantity: number) => {
+    // Optimistic UI update first
+    setMergedItems((prevItems) =>
+      prevItems.map((mergedItem) => {
+        if (areCartItemsEqual(mergedItem, item)) {
+          return { ...mergedItem, quantity: newQuantity };
+        }
+        return mergedItem;
+      })
+    );
+
+    // Then update the actual cart
     cart.updateQuantity(item, newQuantity);
   };
 
   const handleRemove = (item: CartItem) => {
+    // Optimistic update - mark item as being removed immediately
+    setMergedItems((prevItems) =>
+      prevItems.map((mergedItem) => {
+        if (
+          mergedItem.product.id === item.id &&
+          areCartItemsEqual(mergedItem, item)
+        ) {
+          return { ...mergedItem, isRemoving: true };
+        }
+        return mergedItem;
+      })
+    );
+
+    // Then perform the actual removal
     cart.removeItem(item);
+  };
+
+  // Helper function to compare cart items
+  const areCartItemsEqual = (
+    mergedItem: MergedCartItem,
+    cartItem: CartItem
+  ) => {
+    if (mergedItem.product.id !== cartItem.id) return false;
+
+    // Compare colors
+    if (
+      mergedItem.color?.name !== cartItem.color?.name ||
+      mergedItem.color?.hex !== cartItem.color?.hex
+    ) {
+      return false;
+    }
+
+    // Compare other variants
+    const mergedVariants = mergedItem.otherVariants || {};
+    const cartVariants = cartItem.otherVariants || {};
+
+    const allKeys = new Set([
+      ...Object.keys(mergedVariants),
+      ...Object.keys(cartVariants),
+    ]);
+
+    for (const key of allKeys) {
+      if (mergedVariants[key] !== cartVariants[key]) {
+        return false;
+      }
+    }
+
+    return true;
   };
 
   const getCartSubTotal = () => {
@@ -79,12 +170,11 @@ const Page = () => {
   async function handleCheckoutSubmit() {
     setIsCreatingCheckout(true);
     try {
-      // Create mutable copy for checkout
       const checkoutItems = [...cart.items];
       const checkoutSession = await createCheckoutSession(checkoutItems);
 
       if (checkoutSession.url) {
-        window.location.href = checkoutSession.url;
+        router.push(checkoutSession.url);
       } else {
         alert("Something went wrong");
       }
@@ -146,7 +236,9 @@ const Page = () => {
               return (
                 <div
                   key={`${item.product.id}-${idx}`}
-                  className="flex gap-4 border-b py-4"
+                  className={`flex gap-4 border-b py-4 transition-opacity ${
+                    item.isRemoving ? "opacity-50" : ""
+                  }`}
                 >
                   <ImageComponent
                     data={item.product.pictures?.[0]}
@@ -192,7 +284,8 @@ const Page = () => {
                                 Math.max(1, item.quantity - 1)
                               )
                             }
-                            className="p-1 border rounded"
+                            className="p-1 border rounded cursor-pointer"
+                            disabled={item.isRemoving}
                           >
                             <Minus size={16} />
                           </button>
@@ -201,17 +294,25 @@ const Page = () => {
                             onClick={() =>
                               handleQuantityChange(cartItem, item.quantity + 1)
                             }
-                            className="p-1 border rounded"
+                            className="p-1 border rounded cursor-pointer"
+                            disabled={item.isRemoving}
                           >
                             <Plus size={16} />
                           </button>
                         </div>
                         <button
                           onClick={() => handleRemove(cartItem)}
-                          className="text-red-600 text-xs flex items-center gap-1"
+                          className="text-red-600 text-xs flex items-center gap-1 hover:text-red-900 cursor-pointer transition-colors"
+                          disabled={item.isRemoving}
                         >
-                          <Trash2 size={14} />
-                          Remove
+                          {item.isRemoving ? (
+                            <span>Removing...</span>
+                          ) : (
+                            <>
+                              <Trash2 size={14} />
+                              Remove
+                            </>
+                          )}
                         </button>
                       </div>
                     </div>

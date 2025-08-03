@@ -3,7 +3,6 @@
 import { stripe } from "./stripe";
 import type Stripe from "stripe";
 import { createOrder } from "./requests";
-import { reconcileOrders } from "./reconcile-orders";
 
 export async function PostWebhook(rawBody: Buffer, sig: string) {
   let event: Stripe.Event;
@@ -67,7 +66,6 @@ export async function PostWebhook(rawBody: Buffer, sig: string) {
     };
 
     try {
-      reconcileOrders()
       await createOrder(orderData)
 
       return { success: true };
