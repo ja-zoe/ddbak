@@ -27,6 +27,7 @@ ENV NODE_ENV=production
 # Copy built app and dependencies from builder
 COPY --from=builder /app/.next ./
 COPY --from=builder /app/node_modules ./
+COPY --from=builder /app/package.json ./
 
 # Set non-root user only if it's explicitly created or available
 # Otherwise default to root
