@@ -19,6 +19,7 @@ import { AuroraBackground } from "@/components/ui/aurora-background";
 import { useCart } from "@/contexts/CartProvider";
 import type { CartItem } from "@/contexts/CartProvider";
 import { useRouter } from "next/navigation";
+import SkeletonCartItem from "@/components/skeletons/SkeletonCartItem";
 
 type MergedCartItem = {
   product: Product;
@@ -55,13 +56,15 @@ const Page = () => {
             itemsToFetch.map((item) => fetchProductFromId(item.id))
           );
 
+          const newCache = { ...updatedCache };
           fetchedProducts.forEach((product, index) => {
             const id = itemsToFetch[index].id;
-            updatedCache[id] = product;
+            newCache[id] = product;
           });
 
           // Update the state cache with the new merged data
-          setProductCache(updatedCache);
+          setProductCache(newCache);
+          updatedCache = newCache;
         }
 
         // Always use the updatedCache for merging
@@ -92,7 +95,8 @@ const Page = () => {
     }
 
     mergeCartItems();
-  }, [cart]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cart.items]);
 
   const handleQuantityChange = (item: CartItem, newQuantity: number) => {
     // Optimistic UI update first
@@ -188,17 +192,41 @@ const Page = () => {
 
   if (loading) {
     return (
-      <div className="h-screen flex justify-center items-center">
-        <p>Loading...</p>
-      </div>
+      <AuroraBackground className="bg-black/10 py-12 min-h-screen">
+        <div className="space-y-4 pt-20 relative">
+          <div className="flex flex-col items-center">
+            <p className="text-2xl font-semibold mb-2">Shopping Cart</p>
+          </div>
+          <div className="md:flex md:flex-row md:justify-center md:gap-2 px-4">
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <SkeletonCartItem key={i} />
+              ))}
+            </div>
+            <div className="md:w-80 space-y-3 p-4 bg-gray-100 rounded-lg h-fit animate-pulse">
+              <div className="w-32 h-6 bg-gray-200 rounded" />
+              <div className="space-y-2">
+                <div className="w-full h-4 bg-gray-200 rounded" />
+                <div className="w-full h-4 bg-gray-200 rounded" />
+              </div>
+              <div className="w-full h-10 bg-gray-200 rounded" />
+            </div>
+          </div>
+        </div>
+      </AuroraBackground>
     );
   }
 
   if (cart.items.length === 0) {
     return (
-      <AuroraBackground>
+      <AuroraBackground className="bg-black/10 min-h-screen">
         <div className="relative h-screen flex justify-center items-center">
-          <p>No items in shopping cart</p>
+          <div className="text-center space-y-3">
+            <p className="text-xl text-gray-600">No items in shopping cart</p>
+            <Link href="/" className="inline-block px-6 py-2 bg-gold text-white rounded-md hover:bg-gold/90 transition-all">
+              Continue Shopping
+            </Link>
+          </div>
         </div>
       </AuroraBackground>
     );
@@ -223,8 +251,8 @@ const Page = () => {
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        <div className="md:flex md:flex-row md:justify-center md:gap-2">
-          <div>
+        <div className="md:flex md:flex-row md:justify-center md:gap-6 px-4">
+          <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-6">
             {mergedItems.map((item, idx) => {
               const cartItem: CartItem = {
                 id: item.product.id,
@@ -236,30 +264,30 @@ const Page = () => {
               return (
                 <div
                   key={`${item.product.id}-${idx}`}
-                  className={`flex gap-4 border-b py-4 transition-opacity ${
+                  className={`flex gap-4 border-b last:border-b-0 py-4 transition-opacity ${
                     item.isRemoving ? "opacity-50" : ""
                   }`}
                 >
                   <ImageComponent
                     data={item.product.pictures?.[0]}
-                    className="w-28 h-28 rounded-sm overflow-hidden"
+                    className="w-28 h-28 rounded-lg overflow-hidden shadow-md"
                   />
                   <div className="flex grow justify-between">
                     <div className="space-y-2">
                       <div>
-                        <p className="text-lg font-medium">
+                        <p className="text-lg font-semibold text-gray-900">
                           {item.product.name}
                         </p>
-                        <p className="text-sm text-muted-foreground mb-1">
+                        <p className="text-sm text-gray-600 mb-1">
                           {item.product.description}
                         </p>
                       </div>
                       <div>
                         {item.color && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <span>Color:</span>
+                          <div className="flex items-center gap-2 text-sm text-gray-700">
+                            <span className="font-medium">Color:</span>
                             <div
-                              className="w-4 h-4 rounded-full border"
+                              className="w-5 h-5 rounded-full border-2 border-gray-300"
                               style={{ backgroundColor: item.color.hex }}
                             />
                             <span>{item.color.name}</span>
@@ -267,16 +295,16 @@ const Page = () => {
                         )}
                         {item.otherVariants &&
                           Object.entries(item.otherVariants).map(([k, v]) => (
-                            <p key={k} className="text-sm">
-                              {k}: {v}
+                            <p key={k} className="text-sm text-gray-700">
+                              <span className="font-medium">{k}:</span> {v}
                             </p>
                           ))}
                       </div>
                     </div>
                     <div className="flex flex-col justify-between items-end">
-                      <p className="text-lg">${item.product.price}</p>
+                      <p className="text-xl font-bold text-gold">${item.product.price}</p>
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
                           <button
                             onClick={() =>
                               handleQuantityChange(
@@ -284,17 +312,17 @@ const Page = () => {
                                 Math.max(1, item.quantity - 1)
                               )
                             }
-                            className="p-1 border rounded cursor-pointer"
+                            className="p-1 hover:bg-gray-200 rounded cursor-pointer transition-colors"
                             disabled={item.isRemoving}
                           >
                             <Minus size={16} />
                           </button>
-                          <span>{item.quantity}</span>
+                          <span className="w-8 text-center font-semibold">{item.quantity}</span>
                           <button
                             onClick={() =>
                               handleQuantityChange(cartItem, item.quantity + 1)
                             }
-                            className="p-1 border rounded cursor-pointer"
+                            className="p-1 hover:bg-gray-200 rounded cursor-pointer transition-colors"
                             disabled={item.isRemoving}
                           >
                             <Plus size={16} />
@@ -302,7 +330,7 @@ const Page = () => {
                         </div>
                         <button
                           onClick={() => handleRemove(cartItem)}
-                          className="text-red-600 text-xs flex items-center gap-1 hover:text-red-900 cursor-pointer transition-colors"
+                          className="text-red-600 text-xs flex items-center gap-1 hover:text-red-900 cursor-pointer transition-colors font-medium"
                           disabled={item.isRemoving}
                         >
                           {item.isRemoving ? (
@@ -321,28 +349,35 @@ const Page = () => {
               );
             })}
           </div>
-          <div className="md:w-80 space-y-3 p-4">
-            <p className="font-semibold">Order Summary</p>
-            <div className="border-b">
-              <div className="flex justify-between">
+          <div className="md:w-96 bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-6 h-fit space-y-4">
+            <h2 className="text-xl font-bold text-gray-900">Order Summary</h2>
+            <div className="border-b pb-4 space-y-2">
+              <div className="flex justify-between text-gray-700">
                 <p>Subtotal</p>
-                <p>${getCartSubTotal().toFixed(2)}</p>
+                <p className="font-semibold">${getCartSubTotal().toFixed(2)}</p>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between text-gray-700">
                 <p>Shipping</p>
-                <p>$0</p>
+                <p className="font-semibold">$0.00</p>
               </div>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between text-lg font-bold">
               <p>Total</p>
-              <p>USD ${getCartSubTotal().toFixed(2)}</p>
+              <p className="text-gold">${getCartSubTotal().toFixed(2)} USD</p>
             </div>
             <button
-              className="px-2 h-8 rounded-sm w-full text-white bg-gold cursor-pointer flex items-center justify-center"
+              className="px-4 py-3 rounded-md w-full text-white bg-gold cursor-pointer flex items-center justify-center font-semibold hover:bg-gold/90 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleCheckoutSubmit}
               disabled={isCreatingCheckout}
             >
-              {isCreatingCheckout ? <div className="loader" /> : "Checkout"}
+              {isCreatingCheckout ? (
+                <span className="flex items-center gap-2">
+                  <div className="loader" />
+                  Processing...
+                </span>
+              ) : (
+                "Proceed to Checkout"
+              )}
             </button>
           </div>
         </div>

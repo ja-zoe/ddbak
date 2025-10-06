@@ -1,7 +1,8 @@
 "use client";
 
+import React from "react";
 import type { Product } from "@payload";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -59,7 +60,10 @@ const ProductForm = ({ product }: { product: Product }) => {
     defaultValues,
   });
 
-  const onSubmit = (data: FormData) => {
+  const [isAdding, setIsAdding] = React.useState(false);
+
+  const onSubmit = async (data: FormData) => {
+    setIsAdding(true);
     const selectedColor = product.colors?.find(
       (c) => c.colorName === data.color
     );
@@ -69,27 +73,31 @@ const ProductForm = ({ product }: { product: Product }) => {
       : undefined;
 
     const otherVariants = data.otherVariants;
-    console.log();
 
     cart.addItem({ id: product.id, color, otherVariants, quantity: 1 });
+
+    setTimeout(() => {
+      setIsAdding(false);
+      form.reset();
+    }, 500);
   };
+
   return (
     <Form {...form}>
-      <form className="space-y-3" onSubmit={form.handleSubmit(onSubmit)}>
-        {/* COLORS */}
+      <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
         {product.colors && product.colors.length > 0 && (
           <FormField
             control={form.control}
             name="color"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Color</FormLabel>
+                <FormLabel className="text-sm font-semibold text-gray-700">Color</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger className="cursor-pointer">
+                    <SelectTrigger className="cursor-pointer border-gray-300 hover:border-gold transition-colors">
                       <SelectValue placeholder="Select a color" />
                     </SelectTrigger>
                   </FormControl>
@@ -98,7 +106,7 @@ const ProductForm = ({ product }: { product: Product }) => {
                       <SelectItem key={color.colorName} value={color.colorName}>
                         <div className="flex items-center gap-2">
                           <div
-                            className="w-4 h-4 rounded-full border"
+                            className="w-5 h-5 rounded-full border-2 border-gray-300"
                             style={{ backgroundColor: color.color }}
                           />
                           <span>{color.colorName}</span>
@@ -120,14 +128,14 @@ const ProductForm = ({ product }: { product: Product }) => {
             control={form.control}
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{variant.variantName}</FormLabel>
+                <FormLabel className="text-sm font-semibold text-gray-700">{variant.variantName}</FormLabel>
                 <Select
                   onValueChange={(value) => {
                     form.setValue(
                       `otherVariants.${variant.variantName}`,
                       value,
                       {
-                        shouldValidate: true, // this is what you're missing
+                        shouldValidate: true,
                         shouldTouch: true,
                       }
                     );
@@ -135,7 +143,7 @@ const ProductForm = ({ product }: { product: Product }) => {
                   defaultValue={field.value}
                 >
                   <FormControl>
-                    <SelectTrigger className="cursor-pointer">
+                    <SelectTrigger className="cursor-pointer border-gray-300 hover:border-gold transition-colors">
                       <SelectValue
                         placeholder={`Select a ${variant.variantName}`}
                       />
@@ -157,9 +165,17 @@ const ProductForm = ({ product }: { product: Product }) => {
 
         <button
           type="submit"
-          className="bg-gold text-white px-2 py-1 rounded-sm text-lg w-full cursor-pointer"
+          disabled={isAdding}
+          className="bg-gold text-white px-4 py-3 rounded-md text-lg w-full cursor-pointer font-semibold hover:bg-gold/90 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
         >
-          Add to cart
+          {isAdding ? (
+            <span className="flex items-center gap-2">
+              <div className="loader" />
+              Adding...
+            </span>
+          ) : (
+            "Add to Cart"
+          )}
         </button>
       </form>
     </Form>
