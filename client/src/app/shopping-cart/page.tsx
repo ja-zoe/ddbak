@@ -251,7 +251,7 @@ const Page = () => {
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        <div className="md:flex md:flex-row md:justify-center md:gap-6 px-4">
+        <div className="space-y-4 md:flex md:justify-center md:gap-6 px-4">
           <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-6">
             {mergedItems.map((item, idx) => {
               const cartItem: CartItem = {
@@ -264,15 +264,15 @@ const Page = () => {
               return (
                 <div
                   key={`${item.product.id}-${idx}`}
-                  className={`flex gap-4 border-b last:border-b-0 py-4 transition-opacity ${
+                  className={`md:flex gap-4 border-b last:border-b-0 py-4 transition-opacity ${
                     item.isRemoving ? "opacity-50" : ""
                   }`}
                 >
                   <ImageComponent
                     data={item.product.pictures?.[0]}
-                    className="w-56 h-28 rounded-lg overflow-hidden shadow-md"
+                    className="w-28 h-28 rounded-lg overflow-hidden shadow-md"
                   />
-                  <div className="flex grow justify-between">
+                  <div className="md:flex grow justify-between">
                     <div className="space-y-2">
                       <div>
                         <p className="text-lg font-semibold text-gray-900">
@@ -301,7 +301,7 @@ const Page = () => {
                           ))}
                       </div>
                     </div>
-                    <div className="flex flex-col justify-between items-end">
+                    <div className="flex md:flex-col justify-between items-end">
                       <p className="text-xl font-bold text-gold">${item.product.price}</p>
                       <div className="space-y-2">
                         <div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">

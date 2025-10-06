@@ -58,8 +58,8 @@ export default function Page() {
   ));
 
   return (
-    <AuroraBackground className="bg-black/10 py-12 min-h-screen">
-      <div className="absolute w-full h-full flex flex-col md:flex-row justify-center items-center gap-8 px-4">
+    <AuroraBackground className="bg-black/10 py-12 min-h-full">
+      <div className="space-y-5 w-full min-h-full md:flex justify-center items-center gap-5 pt-5 px-4">
         <ProductImagesCarousel images={imageElements} />
         <div className="p-6 space-y-6 md:w-1/3 bg-white/90 backdrop-blur-sm rounded-lg shadow-xl">
           <div className="space-y-3">

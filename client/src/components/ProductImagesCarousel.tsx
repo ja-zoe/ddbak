@@ -16,6 +16,7 @@ interface Props {
 export default function ProductImagesCarousel({ images }: Props) {
   const [thumbsSwiper, setThumbsSwiper] = useState<SwiperType | null>();
 
+  if (images.length > 1)
   return (
     <div className="space-y-3 md:flex md:flex-row-reverse md:w-1/2 md:gap-3">
       <div className="relative flex items-center md:w-3/4 rounded-lg overflow-hidden shadow-2xl">
@@ -42,7 +43,7 @@ export default function ProductImagesCarousel({ images }: Props) {
           className="absolute z-50 right-3 move-right text-white bg-black/30 rounded-full p-1 cursor-pointer hover:bg-black/50 transition-all"
         />
       </div>
-      
+
       <Swiper
         modules={[Thumbs]}
         watchSlidesProgress
@@ -67,4 +68,8 @@ export default function ProductImagesCarousel({ images }: Props) {
       </Swiper>
     </div>
   );
+
+  return <div className="w-56 h-56 md:w-72 md:h-72 mx-auto md:mx-0">
+    {images[0]}
+  </div>
 }
