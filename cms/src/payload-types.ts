@@ -144,12 +144,12 @@ export interface User {
   loginAttempts?: number | null;
   lockUntil?: string | null;
   sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
+  | {
+    id: string;
+    createdAt?: string | null;
+    expiresAt: string;
+  }[]
+  | null;
   password?: string | null;
 }
 /**
@@ -200,25 +200,25 @@ export interface Product {
   price: number;
   pictures: (number | Media)[];
   colors?:
-    | {
-        colorName: string;
-        /**
-         * Choose a color for a variation of this product
-         */
-        color: string;
-        id?: string | null;
-      }[]
-    | null;
+  | {
+    colorName: string;
+    /**
+     * Choose a color for a variation of this product
+     */
+    color: string;
+    id?: string | null;
+  }[]
+  | null;
   otherProductVariants?:
-    | {
-        variantName: string;
-        variantOptions: {
-          option: string;
-          id?: string | null;
-        }[];
-        id?: string | null;
-      }[]
-    | null;
+  | {
+    variantName: string;
+    variantOptions: {
+      option: string;
+      id?: string | null;
+    }[];
+    id?: string | null;
+  }[]
+  | null;
   category: (number | ProductCategory)[];
   updatedAt: string;
   createdAt: string;
@@ -258,14 +258,14 @@ export interface Order {
      * Key-value pairs of variant options (e.g. Size: M)
      */
     selectedVariants?:
-      | {
-          [k: string]: unknown;
-        }
-      | unknown[]
-      | string
-      | number
-      | boolean
-      | null;
+    | {
+      [k: string]: unknown;
+    }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
     quantity: number;
     unitPrice: number;
     id?: string | null;
@@ -283,30 +283,30 @@ export interface Order {
 export interface PayloadLockedDocument {
   id: number;
   document?:
-    | ({
-        relationTo: 'users';
-        value: number | User;
-      } | null)
-    | ({
-        relationTo: 'media';
-        value: number | Media;
-      } | null)
-    | ({
-        relationTo: 'product-categories';
-        value: number | ProductCategory;
-      } | null)
-    | ({
-        relationTo: 'products';
-        value: number | Product;
-      } | null)
-    | ({
-        relationTo: 'gallery-pictures';
-        value: number | GalleryPicture;
-      } | null)
-    | ({
-        relationTo: 'orders';
-        value: number | Order;
-      } | null);
+  | ({
+    relationTo: 'users';
+    value: number | User;
+  } | null)
+  | ({
+    relationTo: 'media';
+    value: number | Media;
+  } | null)
+  | ({
+    relationTo: 'product-categories';
+    value: number | ProductCategory;
+  } | null)
+  | ({
+    relationTo: 'products';
+    value: number | Product;
+  } | null)
+  | ({
+    relationTo: 'gallery-pictures';
+    value: number | GalleryPicture;
+  } | null)
+  | ({
+    relationTo: 'orders';
+    value: number | Order;
+  } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
@@ -327,14 +327,14 @@ export interface PayloadPreference {
   };
   key?: string | null;
   value?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
+  | {
+    [k: string]: unknown;
+  }
+  | unknown[]
+  | string
+  | number
+  | boolean
+  | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -367,12 +367,12 @@ export interface UsersSelect<T extends boolean = true> {
   loginAttempts?: T;
   lockUntil?: T;
   sessions?:
-    | T
-    | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
-      };
+  | T
+  | {
+    id?: T;
+    createdAt?: T;
+    expiresAt?: T;
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -415,24 +415,24 @@ export interface ProductsSelect<T extends boolean = true> {
   price?: T;
   pictures?: T;
   colors?:
-    | T
-    | {
-        colorName?: T;
-        color?: T;
-        id?: T;
-      };
+  | T
+  | {
+    colorName?: T;
+    color?: T;
+    id?: T;
+  };
   otherProductVariants?:
+  | T
+  | {
+    variantName?: T;
+    variantOptions?:
     | T
     | {
-        variantName?: T;
-        variantOptions?:
-          | T
-          | {
-              option?: T;
-              id?: T;
-            };
-        id?: T;
-      };
+      option?: T;
+      id?: T;
+    };
+    id?: T;
+  };
   category?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -453,30 +453,30 @@ export interface GalleryPicturesSelect<T extends boolean = true> {
 export interface OrdersSelect<T extends boolean = true> {
   customerEmail?: T;
   shippingAddress?:
-    | T
-    | {
-        line1?: T;
-        line2?: T;
-        city?: T;
-        state?: T;
-        postal_code?: T;
-        country?: T;
-      };
+  | T
+  | {
+    line1?: T;
+    line2?: T;
+    city?: T;
+    state?: T;
+    postal_code?: T;
+    country?: T;
+  };
   items?:
+  | T
+  | {
+    product?: T;
+    selectedColor?:
     | T
     | {
-        product?: T;
-        selectedColor?:
-          | T
-          | {
-              name?: T;
-              hex?: T;
-            };
-        selectedVariants?: T;
-        quantity?: T;
-        unitPrice?: T;
-        id?: T;
-      };
+      name?: T;
+      hex?: T;
+    };
+    selectedVariants?: T;
+    quantity?: T;
+    unitPrice?: T;
+    id?: T;
+  };
   status?: T;
   stripeSessionId?: T;
   totalAmount?: T;
@@ -524,6 +524,6 @@ export interface Auth {
 }
 
 
-declare module 'payload' {
-  export interface GeneratedTypes extends Config {}
-}
+// declare module 'payload' {
+//   export interface GeneratedTypes extends Config {}
+// }
