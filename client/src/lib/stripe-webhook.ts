@@ -13,7 +13,8 @@ export async function PostWebhook(rawBody: Buffer, sig: string) {
       sig,
       'whsec_f5f1c490fe360599ec65aef9d64836451e658b326db48334845de2dd320a63e9'
     );
-  } catch (err: any) {
+  } catch (e: unknown) {
+    const err = e as Error
     console.error("Webhook signature verification failed:", err.message);
     throw new Error(`Webhook Error: ${err.message}`);
   }

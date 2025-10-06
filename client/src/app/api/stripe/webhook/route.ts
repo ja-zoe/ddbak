@@ -16,7 +16,8 @@ export async function POST(req: NextRequest) {
     // Pass raw buffer to your handler
     const result = await PostWebhook(buffer, sig);
     return NextResponse.json(result);
-  } catch (err: any) {
+  } catch (e: unknown) {
+    const err = e as Error
     console.error("Stripe webhook error:", err.message);
     return new NextResponse(`Webhook handler error: ${err.message}`, { status: 400 });
   }
