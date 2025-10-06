@@ -3,7 +3,7 @@ import { getServerURL } from "@/lib/utils";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: [getServerURL()],
+    domains: ['ddbak.vercel.app'],
   },
 };
 
