@@ -3,6 +3,7 @@
 import { stripe } from "./stripe";
 import { fetchProductFromId } from "./requests";
 import { CartItem } from "@/contexts/CartProvider";
+import { getSelfURL } from "./utils";
 
 export async function createCheckoutSession(cart: CartItem[]) {
   const products = await Promise.all(
@@ -54,6 +55,7 @@ export async function createCheckoutSession(cart: CartItem[]) {
   });
 
   try {
+    const successCancelURL = getSelfURL() + "/shopping-cart"
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items,
@@ -61,8 +63,8 @@ export async function createCheckoutSession(cart: CartItem[]) {
       shipping_address_collection: {
         allowed_countries: ["US"],
       },
-      success_url: `http://localhost:3001/shopping-cart`,
-      cancel_url: `http://localhost:3001/shopping-cart`,
+      success_url: successCancelURL,
+      cancel_url: successCancelURL,
     });
 
     return session;

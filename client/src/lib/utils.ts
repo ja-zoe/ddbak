@@ -28,3 +28,19 @@ export function getStripeKey(): string {
   }
   return apiKey;
 }
+
+export function getNodeEnv(): string {
+  const env = process.env.NODE_ENV;
+  if (!env || env.length < 1) {
+    throw new Error("NODE_ENV environment variable not set");
+  }
+  return env;
+}
+
+export function getSelfURL(): string {
+  const selfURL = process.env.SELF_URL;
+  if (!selfURL || selfURL.length < 1) {
+    throw new Error("SELF_URL environment variable not set");
+  }
+  return selfURL
+}
