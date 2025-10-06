@@ -270,7 +270,7 @@ const Page = () => {
                 >
                   <ImageComponent
                     data={item.product.pictures?.[0]}
-                    className="w-28 h-28 rounded-lg overflow-hidden shadow-md"
+                    className="w-56 h-28 rounded-lg overflow-hidden shadow-md"
                   />
                   <div className="flex grow justify-between">
                     <div className="space-y-2">

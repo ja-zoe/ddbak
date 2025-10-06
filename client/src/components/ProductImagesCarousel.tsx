@@ -42,7 +42,7 @@ export default function ProductImagesCarousel({ images }: Props) {
           className="absolute z-50 right-3 move-right text-white bg-black/30 rounded-full p-1 cursor-pointer hover:bg-black/50 transition-all"
         />
       </div>
-
+      
       <Swiper
         modules={[Thumbs]}
         watchSlidesProgress

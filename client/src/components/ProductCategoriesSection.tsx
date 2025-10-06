@@ -41,7 +41,7 @@ const ProductCategoriesSection = () => {
             <div className="max-w-xs w-full group/card relative">
               <div
                 className={cn(
-                  "relative cursor-pointer overflow-hidden h-96 shadow-xl rounded-lg mx-auto flex flex-col justify-end p-4"
+                  "relative cursor-pointer overflow-hidden h-96 w-72 shadow-xl rounded-lg mx-auto flex flex-col justify-end p-4"
                 )}
               >
                 <ImageComponent

@@ -78,7 +78,6 @@ const ProductForm = ({ product }: { product: Product }) => {
 
     setTimeout(() => {
       setIsAdding(false);
-      form.reset();
     }, 500);
   };
 
