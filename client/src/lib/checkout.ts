@@ -65,6 +65,11 @@ export async function createCheckoutSession(cart: CartItem[]) {
       },
       success_url: successCancelURL,
       cancel_url: successCancelURL,
+      shipping_options: [
+        {
+          shipping_rate: 'shr_1SK3ZnAklsCrkuUGd1JuN3L6',
+        },
+      ]
     });
 
     return session;
